@@ -23,6 +23,8 @@ class GroceryTile extends StatelessWidget {
           Text(
             item.name,
           ),
+          Text(
+              '${DateFormat('dd/MM/yyyy').format(item.date) + '  ${DateFormat('hh:mm a').format(item.date)}'}'),
           buildCheckbox(),
         ],
       ),
