@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
 import '../models/models.dart';
 
 class GroceryItemScreen extends StatefulWidget {
@@ -20,11 +21,11 @@ class GroceryItemScreen extends StatefulWidget {
 
 class _GroceryItemScreenState extends State<GroceryItemScreen> {
   final _nameController = TextEditingController();
+  final _dateController = TextEditingController();
+  final _timeController = TextEditingController();
   String _name = '';
   DateTime _dueDate = DateTime.now();
   TimeOfDay _timeOfDay = TimeOfDay.now();
-  Color _currentColor = Colors.green;
-  int _currentSliderValue = 0;
 
   @override
   void initState() {
@@ -35,6 +36,8 @@ class _GroceryItemScreenState extends State<GroceryItemScreen> {
       final date = originalItem.date;
       _timeOfDay = TimeOfDay(hour: date.hour, minute: date.minute);
       _dueDate = date;
+      _dateController.text = DateFormat('yyyy-MM-dd').format(date);
+      _timeController.text = '${_timeOfDay.hour}:${_timeOfDay.minute}';
     }
 
     _nameController.addListener(() {
@@ -42,19 +45,32 @@ class _GroceryItemScreenState extends State<GroceryItemScreen> {
         _name = _nameController.text;
       });
     });
+
+    _dateController.addListener(() {
+      _dueDate = DateTime.parse(_dateController.text);
+    });
+
+    _timeController.addListener(() {
+      int splitIndex = _timeController.text.indexOf(":");
+      _timeOfDay = TimeOfDay(
+          hour: int.parse(_timeController.text.substring(0, splitIndex).trim()),
+          minute:
+              int.parse(_timeController.text.substring(splitIndex + 1).trim()));
+    });
     super.initState();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _dateController.dispose();
+    _timeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 2
       appBar: AppBar(
         actions: [
           IconButton(
@@ -63,7 +79,6 @@ class _GroceryItemScreenState extends State<GroceryItemScreen> {
               final groceryItem = GroceryItem(
                 id: widget.originalItem?.id ?? const Uuid().v1(),
                 name: _nameController.text,
-          
                 date: DateTime(
                   _dueDate.year,
                   _dueDate.month,
@@ -88,11 +103,77 @@ class _GroceryItemScreenState extends State<GroceryItemScreen> {
       body: Container(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
-          children: [
-            buildNameField(),
-          ],
+          children: [buildNameField(), buildDateField(), BuildTimeField()],
         ),
       ),
+    );
+  }
+
+  Widget buildDateField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Due Date',
+        ),
+        TextField(
+          controller: _dateController,
+          decoration: InputDecoration(
+            labelText: "Enter Date",
+            enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white),
+            ),
+          ),
+          readOnly: true,
+          onTap: () async {
+            DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: _dueDate ?? DateTime.now(),
+                firstDate: DateTime(1950),
+                lastDate: DateTime(2100));
+
+            if (pickedDate != null) {
+              String formattedDate =
+                  DateFormat('yyyy-MM-dd').format(pickedDate);
+              setState(() {
+                _dateController.text = formattedDate;
+              });
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget BuildTimeField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Time Of Day',
+        ),
+        TextField(
+          controller: _timeController,
+          decoration: InputDecoration(
+            labelText: "Enter Time",
+            enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white),
+            ),
+          ),
+          readOnly: true,
+          onTap: () async {
+            TimeOfDay? pickedTime = await showTimePicker(
+                context: context, initialTime: _timeOfDay ?? TimeOfDay.now());
+
+            if (pickedTime != null) {
+              String formattedTime = '${pickedTime.hour}:${pickedTime.minute}';
+              setState(() {
+                _timeController.text = formattedTime;
+              });
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -105,17 +186,10 @@ class _GroceryItemScreenState extends State<GroceryItemScreen> {
         ),
         TextField(
           controller: _nameController,
-          cursorColor: _currentColor,
           decoration: InputDecoration(
             hintText: 'Ex: Bananas',
             enabledBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.white),
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _currentColor),
-            ),
-            border: UnderlineInputBorder(
-              borderSide: BorderSide(color: _currentColor),
             ),
           ),
         ),
