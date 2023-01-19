@@ -22,7 +22,7 @@ class _RecipeSearchState extends State<RecipeSearch> {
   @override
   void initState() {
     super.initState();
-    loadRecipes('');
+    //loadRecipes('');
 
     _searchController.addListener(() {
       searchQuery = _searchController.text;
@@ -36,7 +36,7 @@ class _RecipeSearchState extends State<RecipeSearch> {
   }
 
   Future loadRecipes(searchQuery) async {
-    final response = await RecipeService.getRecipes(searchQuery, 0, 5);
+    final response = await RecipeService.getRecipes(searchQuery, 0, 10);
     setState(() {
       recipes = APIRecipeQuery.fromJson(jsonDecode(response));
     });
@@ -57,12 +57,15 @@ class _RecipeSearchState extends State<RecipeSearch> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    labelText: "Search Recipes",
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blueAccent),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelText: "Search Recipes",
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blueAccent),
+                      ),
                     ),
                   ),
                 ),
@@ -75,38 +78,34 @@ class _RecipeSearchState extends State<RecipeSearch> {
                   }),
             ],
           ),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate:
-                  SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-              itemCount: recipes!.hits.length,
-              itemBuilder: (BuildContext context, int index) {
-                return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => RecipeDetails(
-                                recipe: recipes!.hits[index].recipe)),
-                      );
-                    },
-                    child: recipeCard(recipes!.hits[index].recipe));
-              },
-            ),
-          ),
+          Expanded(child: getScreenState()),
         ],
       ),
     );
   }
 
-  // List<Widget> Results() {
-  //   List<Widget> results = [];
-  //   for (int i = 0; i < recipes!.hits.length; i++) {
-  //     // results.add(new Text(recipes!.hits[i].recipe.label));
-  //     results.add(recipeCard(recipes!.hits[i].recipe));
-  //   }
-  //   return results;
-  // }
+  Widget getScreenState() {
+    if (recipes != null) {
+      return GridView.builder(
+        gridDelegate:
+            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+        itemCount: recipes!.hits.length,
+        itemBuilder: (BuildContext context, int index) {
+          return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          RecipeDetails(recipe: recipes!.hits[index].recipe)),
+                );
+              },
+              child: recipeCard(recipes!.hits[index].recipe));
+        },
+      );
+    }
+    return Center(child: Text("Search Something"));
+  }
 
   Widget recipeCard(dynamic recipe) {
     if (recipe == null) return new Text("Search");

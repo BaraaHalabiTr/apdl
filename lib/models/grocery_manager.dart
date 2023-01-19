@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'grocery_item.dart';
 
 class GroceryManager extends ChangeNotifier {
-  final groceries = <GroceryItem>[];
+  static var groceries = <GroceryItem>[];
   List<GroceryItem> get groceryItems => List.unmodifiable(groceries);
 
   void addItem(GroceryItem item) {

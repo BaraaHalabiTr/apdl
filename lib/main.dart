@@ -1,3 +1,4 @@
+import 'package:apd/bookmarks.dart';
 import 'package:apd/grocery.dart';
 import 'package:apd/models/grocery_manager.dart';
 import 'package:flutter/material.dart';
@@ -53,11 +54,7 @@ class _NavBarState extends State<NavBar> {
       ),
       body: <Widget>[
         RecipeSearch(title: 'Recipes'),
-        Container(
-          color: Colors.green,
-          alignment: Alignment.center,
-          child: const Text('Page 2'),
-        ),
+        Bookmarks(),
         MultiProvider(
           providers: [
             ChangeNotifierProvider(
